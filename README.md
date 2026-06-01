@@ -2,20 +2,19 @@
 
 Author: **Giang Tran**
 
-Replication package for the econometric analysis of temperature--load dynamics across 21 European countries (2020--2024).
+Replication package for the econometric analysis of temperature-load dynamics across 21 European countries (2020-2024).
 
 ## Archive
 
-- **GitHub:** `https://github.com/USERNAME/REPO` (release tag `v1.0`)
-- **Zenodo:** [DOI: 10.5281/zenodo.XXXXXXX](https://doi.org/10.5281/zenodo.XXXXXXX) — replace after upload
+- **GitHub:** `https://github.com/giangphuongtran/advanced-econometrics` (release tag `v1.0`)
+- **Zenodo:** [[DOI: 10.5281/zenodo.20493283](https://doi.org/10.5281/zenodo.20493282)
 
-## Quick start (fast path, ~5 minutes)
+## Quick start
 
 No API keys required if you use the Zenodo data archive.
 
 ```bash
-git clone https://github.com/USERNAME/REPO.git
-cd REPO/final-project
+git clone https://github.com/giangphuongtran/advanced-econometrics.git
 
 # Unpack Zenodo archive into data/ (see Zenodo record for file list)
 
@@ -54,31 +53,6 @@ Pipeline scripts (in `codes/`):
 | 5 | `05_build_daily_panel.py` | `data/daily_integrated_u_curve_dataset.parquet` |
 
 Place `data/gpw_v4_population_2020.tif` (NASA SEDAC GPW v4) for full population-weighted weather aggregation.
-
-## What to upload where
-
-### GitHub (source code only)
-
-- All files in this directory except large data and secrets
-- Tag release `v1.0` for Zenodo GitHub integration
-
-### Zenodo (citable data + PDF)
-
-Upload alongside the GitHub release ZIP:
-
-- `data/cleaned_daily_weather_load.csv`
-- `data/daily_integrated_u_curve_dataset.parquet`
-- `data/final_integrated_u_curve_dataset.parquet` (hourly; needed for Section 6)
-- `data/eurostat_population_annual.csv`, `data/gpw_grid_weights.parquet`
-- Exported CSV tables (`stationarity_*.csv`, `baseline_*.csv`, `ardl_*.csv`, etc.)
-- `report/report.pdf`
-
-### Never upload
-
-- `codes/.env` (ENTSO-E API key) — use environment variable instead
-- Raw ENTSO-E cache (`energy_country_level/_cache_*`)
-- Raw ERA5 NetCDF (`era5_eu_data/*.nc`)
-- `gpw_v4_population_2020.tif` (NASA SEDAC licence)
 
 ## Makefile targets
 
