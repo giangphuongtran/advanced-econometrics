@@ -7,7 +7,7 @@ Replication package for the econometric analysis of temperature-load dynamics ac
 ## Archive
 
 - **GitHub:** `https://github.com/giangphuongtran/advanced-econometrics` (release tag `v1.0`)
-- **Zenodo:** [[DOI: 10.5281/zenodo.20493283](https://doi.org/10.5281/zenodo.20493282)
+- **Zenodo:** [DOI: 10.5281/zenodo.20493283](https://doi.org/10.5281/zenodo.20493282)
 
 ## Quick start
 
