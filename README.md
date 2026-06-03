@@ -39,8 +39,6 @@ Requires `ENTSOE_API_KEY` and a Copernicus CDS token (`~/.cdsapirc`).
 export ENTSOE_API_KEY="your-token"
 pip install -r requirements.txt
 Rscript setup-r.R
-
-make raw-data && make all
 ```
 
 Pipeline scripts (in `codes/`):
@@ -55,12 +53,15 @@ Pipeline scripts (in `codes/`):
 
 Place `data/gpw_v4_population_2020.tif` (NASA SEDAC GPW v4) for full population-weighted weather aggregation.
 
+<<<<<<< HEAD
 ## Makefile targets
 
 | Target | Description |
 |--------|-------------|
 | `make all` | `tables` + `figures` + `report` |
 
+=======
+>>>>>>> saved-work
 ## Main analysis files
 
 - `final-project-analysis.Rmd` — full econometric notebook
