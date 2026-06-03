@@ -14,7 +14,6 @@ Replication package for the econometric analysis of temperature-load dynamics ac
 No API keys required if you use the Zenodo data archive.
 
 ```bash
-
 git clone https://github.com/giangphuongtran/advanced-econometrics.git
 
 # Unpack Zenodo archive into data/ (see Zenodo record for file list)
@@ -22,7 +21,7 @@ git clone https://github.com/giangphuongtran/advanced-econometrics.git
 pip install -r requirements.txt
 Rscript setup-r.R
 
-make all    # Knits Rmd, auto-generates LaTeX tables, and compiles report.pdf
+make all    # tables + figures + report.pdf
 ```
 
 Outputs:
@@ -39,6 +38,8 @@ Requires `ENTSOE_API_KEY` and a Copernicus CDS token (`~/.cdsapirc`).
 export ENTSOE_API_KEY="your-token"
 pip install -r requirements.txt
 Rscript setup-r.R
+
+make raw-data && make all
 ```
 
 Pipeline scripts (in `codes/`):
@@ -58,10 +59,17 @@ Place `data/gpw_v4_population_2020.tif` (NASA SEDAC GPW v4) for full population-
 | Target | Description |
 |--------|-------------|
 | `make all` | `tables` + `figures` + `report` |
+| `make tables` | Regenerate CSV exports |
+| `make figures` | Regenerate `report/figures/*.pdf` |
+| `make report` | Compile LaTeX PDF |
+| `make analysis` | Knit `final-project-analysis.Rmd` |
+| `make raw-data` | Run Python pipeline 01--05 |
+| `make clean` | Remove derived artefacts |
 
 ## Main analysis files
 
 - `final-project-analysis.Rmd` — full econometric notebook
 - `report/report.tex` — LaTeX manuscript
+- `export-publication-tables.R`, `export-checklist-tables.R` — table exports
 
 Helper functions at repo root: `function_testdf2.R` (ADF selection).
