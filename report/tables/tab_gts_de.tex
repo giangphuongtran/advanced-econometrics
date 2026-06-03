@@ -1,12 +1,15 @@
-
+\begin{table}
+\centering
+\resizebox{\ifdim\width>\linewidth\linewidth\else\width\fi}{!}{
 \begin{tabular}{rllrl}
 \toprule
 Step & Model & Change & $R^2$ & F-test $p$\\
 \midrule
 1 & General OLS & Full model with all weather controls & 0.729 & ---\\
-2 & Collinearity check (dewpoint, solar) & Test H0: dewpoint_c = solar_radiation_wm2 = 0 & 0.729 & 0.483\\
+2 & Collinearity check (dewpoint, solar) & Test H0: dewpoint\_c = solar\_radiation\_wm2 = 0 & 0.729 & 0.483\\
 3 & Joint F on insignificant set & Test H0: dewpoint, solar, month02, month11, precipitation = 0 & 0.729 & 0.030\\
-4 & Merge Nov into Jan & month_reduced with Nov merged to Jan baseline & 0.729 & 0.433\\
-5 & Drop precipitation (final) & Drop precipitation_mm -> final parsimonious OLS & 0.728 & 0.262\\
+4 & Merge Nov into Jan & month\_reduced with Nov merged to Jan baseline & 0.729 & 0.433\\
+5 & Drop precipitation (final) & Drop precipitation\_mm $\rightarrow$ final parsimonious OLS & 0.728 & 0.262\\
 \bottomrule
-\end{tabular}
+\end{tabular}}
+\end{table}

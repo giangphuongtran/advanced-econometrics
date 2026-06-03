@@ -510,9 +510,9 @@ Replication artefacts are hosted in two locations: source code on GitHub (\url{h
 
 \begin{enumerate}
   \item Clone the GitHub repository at tag \texttt{v1.0}.
-  \item Download the Zenodo archive and unpack into \texttt{final-project/data/}.
+  \item Download the Zenodo archive and unpack into a repository.
   \item Install dependencies: \texttt{pip install -r requirements.txt} and \texttt{Rscript setup-r.R} (or \texttt{renv::restore()}).
-  \item From \texttt{final-project/}: run \texttt{make all}. This regenerates all CSV tables (\texttt{make tables}), figures (\texttt{make figures}), and the compiled \texttt{report.pdf} (\texttt{make report}) from the archived merged panel.
+  \item From \texttt{root-repository/}: run \texttt{make all}. This regenerates all CSV tables, figures, and the compiled \texttt{report.pdf} from the archived merged panel.
 \end{enumerate}
 
 \subsection*{Full path (raw API re-download)}
@@ -520,15 +520,13 @@ Replication artefacts are hosted in two locations: source code on GitHub (\url{h
 This path rebuilds the merged daily panel from ENTSO-E and ERA5 sources and requires personal API credentials. It is equivalent to \texttt{make raw-data \&\& make all}.
 
 \begin{enumerate}
-  \item \textbf{Population.} \texttt{codes/01\_download\_population.py} fetches Eurostat \texttt{demo\_pjan} totals and builds GPW v4 grid weights (\texttt{gpw\_grid\_weights.parquet}). Place \texttt{gpw\_v4\_population\_2020.tif} from NASA SEDAC in \texttt{data/} for full spatial weighting.
+  \item \textbf{Population.} \texttt{codes/01\_download\_population.py} fetches Eurostat \texttt{demo\_pjan} totals and builds GPW v4 grid weights (\texttt{gpw\_grid\_weights.parquet}). Place \path{gpw_v4_population_2020.tif} from NASA SEDAC in \texttt{data/} for full spatial weighting.
   \item \textbf{ENTSO-E load.} \texttt{codes/02\_download\_load.py} downloads hourly actual load by bidding zone. Requires \texttt{ENTSOE\_API\_KEY} (register at \url{https://transparency.entsoe.eu/}).
   \item \textbf{ERA5 weather.} \texttt{codes/03\_download\_weather.py} retrieves reanalysis from the Copernicus Climate Data Store. Requires a CDS token in \texttt{\textasciitilde/.cdsapirc}.
-  \item \textbf{Merge.} \texttt{codes/04\_merge\_data.py} harmonises ERA5 streams, applies population-weighted weather aggregation, and joins to hourly load $\rightarrow$ \texttt{final\_integrated\_u\_curve\_dataset.parquet}.
+  \item \textbf{Merge.} \texttt{codes/04\_merge\_data.py} harmonises ERA5 streams, applies population-weighted weather aggregation, and joins to hourly load $\rightarrow$ \path{final_integrated_u_curve_dataset.parquet}.
   \item \textbf{Daily panel.} \texttt{codes/05\_build\_daily\_panel.py} aggregates hourly to daily $\rightarrow$ \texttt{daily\_integrated\_u\_curve\_dataset.parquet}.
   \item Run the fast path from step~3 onwards.
 \end{enumerate}
-
-Optional targets: \texttt{make analysis} knits \texttt{combined-analysis.Rmd}; \texttt{make clean} removes derived CSV and PDF artefacts while preserving source data in \texttt{data/}.
 
 \section{Full 21-country summary}
 \label{app:full}

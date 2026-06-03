@@ -158,11 +158,20 @@ if (file.exists("data/gts_ols_surviving.csv") && file.exists("data/gts_month_mer
 # -------------------------------------------------------------------------
 if (file.exists("data/gts_ols_reduction_de.csv")) {
   gts_de <- read_csv("data/gts_ols_reduction_de.csv", show_col_types = FALSE) %>%
-    mutate(`F-test $p$` = format_p(f_test_p)) %>%
+    mutate(
+      `F-test $p$` = format_p(f_test_p),
+      # Escape underscores
+      change = str_replace_all(change, "_", "\\\\_"),
+      # Convert "->" to a proper LaTeX arrow to fix the "-¿" bug
+      change = str_replace_all(change, "->", "$\\\\rightarrow$")
+    ) %>%
     select(Step = step, Model = model, Change = change, `$R^2$` = r_squared, `F-test $p$`)
   
-  tex_gts_de <- kable(gts_de, format = "latex", booktabs = TRUE, escape = FALSE, digits = 3, linesep = "")
-  writeLines(tex_gts_de, "report/tables/tab_gts_de.tex")
+  tex_gts_de <- kable(gts_de, format = "latex", booktabs = TRUE, escape = FALSE, digits = 3, linesep = "") %>%
+    # Automatically scales the table down so it never overflows the right margin
+    kable_styling(latex_options = "scale_down")
+  
+  writeLines(as.character(tex_gts_de), "report/tables/tab_gts_de.tex")
 }
 
 # -------------------------------------------------------------------------
