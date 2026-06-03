@@ -53,15 +53,12 @@ Pipeline scripts (in `codes/`):
 
 Place `data/gpw_v4_population_2020.tif` (NASA SEDAC GPW v4) for full population-weighted weather aggregation.
 
-<<<<<<< HEAD
 ## Makefile targets
 
 | Target | Description |
 |--------|-------------|
 | `make all` | `tables` + `figures` + `report` |
 
-=======
->>>>>>> saved-work
 ## Main analysis files
 
 - `final-project-analysis.Rmd` — full econometric notebook
