@@ -1,5 +1,5 @@
 #!/usr/bin/env Rscript
-# Render the final project analysis notebook from final-project/
+# Render the canonical analysis notebook from final-project/
 
 args <- commandArgs(trailingOnly = FALSE)
 script_path <- sub("--file=", "", args[grep("--file=", args)])
@@ -14,9 +14,9 @@ if (!requireNamespace("rmarkdown", quietly = TRUE)) {
 }
 
 rmarkdown::render(
-  input = "final-project-analysis.Rmd",
+  input = "combined-analysis.Rmd",
   output_format = "html_document",
   quiet = FALSE
 )
 
-message("Done. Output written next to final-project-analysis.Rmd")
+message("Done. Output written next to combined-analysis.Rmd")
