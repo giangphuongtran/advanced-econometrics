@@ -43,6 +43,8 @@ report/*.toc
 report/report.pdf
 
 combined-analysis_cache/
+combined-analysis_files/
 
 # OS
 .DS_Store
+.cursor/

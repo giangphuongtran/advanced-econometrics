@@ -47,9 +47,9 @@ This notebook implements the econometric analysis for the final project: **the d
 
 Three analysis frequencies are available:
 
-- `final_integrated_u_curve_dataset.parquet` — hourly
-- `12-hour_integrated_u_curve_dataset.parquet` — 12-hour
-- `daily_integrated_u_curve_dataset.parquet` — daily (main ARDL input)
+- `final_integrated_u_curve_dataset.parquet` - hourly
+- `12-hour_integrated_u_curve_dataset.parquet` - 12-hour
+- `daily_integrated_u_curve_dataset.parquet` - daily (main ARDL input)
 
 The merge step maps weather to country centroids defined in `codes/04_merge_data.py` (21 EU countries).
 
@@ -89,7 +89,7 @@ options(scipen = 999)
 source("R/analysis-helpers.R")
 ```
 
-# 1. Load and Clean Data
+# Load and Clean Data
 
 > **Purpose.** Read the daily parquet (used by EDA / ADF / OLS / ARDL) and the hourly parquet filtered to Germany only (used by section 6 SARIMAX); build derived columns (`log_load`, `temp_c2`, `is_weekend`, `month`) and export the cleaned daily CSV for submission.
 >
@@ -177,7 +177,7 @@ panel_summary <- build_panel_country_summary(daily_clean, pop_annual)
 write_csv(panel_summary, file.path(DATA_DIR, "panel_country_summary.csv"))
 ```
 
-# 2. Exploratory Data Analysis
+# Exploratory Data Analysis
 
 > **Purpose.** Visually check load level / seasonality and the temperature-load U-curve before any formal test.
 >
@@ -214,11 +214,11 @@ ggplot(focus_daily, aes(x = temperature_c, y = load_mw, color = country_code)) +
   theme(legend.position = "none")
 ```
 
-# 3. Stationarity Tests (ADF, KPSS, PP)
+# Stationarity Tests (ADF, KPSS, PP)
 
 > **Purpose.** Decide whether `log_load` and `temperature_c` are I(0) or I(1) using three complementary unit-root tests, then choose whether to model in levels or first differences.
 >
-> **Expected result.** **Levels:** ADF / PP fail to reject the unit-root null, KPSS rejects the stationarity null — verdict non-stationary. **First differences:** ADF / PP reject the unit-root null, KPSS does **not** reject the stationarity null — verdict stationary, series is declared I(1) and modelled in differences in section 5.
+> **Expected result.** **Levels:** ADF / PP fail to reject the unit-root null, KPSS rejects the stationarity null - verdict non-stationary. **First differences:** ADF / PP reject the unit-root null, KPSS does **not** reject the stationarity null - verdict stationary, series is declared I(1) and modelled in differences in section 5.
 >
 > **If not as expected.** If a single test disagrees, prefer KPSS as tie-breaker (its null is stationarity, so a non-rejection is strong evidence of stationarity). If still ambiguous, try a longer ADF augmentation order; if differences remain non-stationary, take second differences.
 >
@@ -247,7 +247,7 @@ adf_results %>%
   select(country, series, augmentations, adf_stat, adf_p, pp_stat, pp_p, kpss_stat, stationary_all_three) %>%
   knitr::kable(
     digits = 4,
-    caption = "ADF / PP / KPSS — focus countries (verdict requires all three to agree on stationarity)"
+    caption = "ADF / PP / KPSS - focus countries (verdict requires all three to agree on stationarity)"
   )
 
 write_csv(
@@ -260,7 +260,7 @@ write_csv(
 
 **Interpretation.** Daily `log(load)` and `temperature_c` are typically non-stationary in **levels** (ADF / PP do not reject, KPSS rejects). After first-differencing both series become stationary (all three tests agree). This justifies the ARDL specification of section 5 in **first differences**.
 
-# 4. Baseline Static Models (OLS and GAM)
+# Baseline Static Models (OLS and GAM)
 
 > **Purpose.** Fit a quadratic OLS U-curve and a GAM smooth, then run a full diagnostic suite (BG, BP, RESET, JB, VIF) to show why a static model is insufficient.
 >
@@ -289,7 +289,7 @@ baseline_results <- map_dfr(FOCUS_COUNTRIES, function(cc) {
 })
 
 baseline_results %>%
-  knitr::kable(digits = 4, caption = "Baseline OLS/GAM — focus countries")
+  knitr::kable(digits = 4, caption = "Baseline OLS/GAM - focus countries")
 
 write_csv(baseline_results, file.path(DATA_DIR, "baseline_ols_focus.csv"))
 ```
@@ -305,7 +305,7 @@ baseline_diag_table <- map_dfr(FOCUS_COUNTRIES, function(cc) {
 baseline_diag_table %>%
   knitr::kable(
     digits = 4,
-    caption = "Baseline OLS diagnostics — Breusch-Godfrey (BG), Breusch-Pagan (BP), Ramsey RESET, Jarque-Bera (JB), VIF on temperature_c"
+    caption = "Baseline OLS diagnostics - Breusch-Godfrey (BG), Breusch-Pagan (BP), Ramsey RESET, Jarque-Bera (JB), VIF on temperature_c"
   )
 
 write_csv(baseline_diag_table, file.path(DATA_DIR, "baseline_diagnostics_focus.csv"))
@@ -326,18 +326,18 @@ for (cc in FOCUS_COUNTRIES) {
   ) +
     geom_segment(aes(xend = lag, yend = 0), linewidth = 0.6) +
     geom_hline(yintercept = c(-ci, ci), linetype = "dotted", color = "red") +
-    labs(title = paste("OLS residual ACF —", cc), x = "Lag (days)", y = "ACF") +
+    labs(title = paste("OLS residual ACF -", cc), x = "Lag (days)", y = "ACF") +
     theme_minimal()
 
   print(p_acf)
 }
 ```
 
-# 5. Variable Selection: Country-by-Country OLS Specification
+# Variable Selection: Country-by-Country OLS Specification
 
 This section performs general-to-specific variable selection for each focus country on the **static OLS** in levels. The goal is to identify which weather regressors belong in each country's parsimonious model before moving to the dynamic ARDL specification in Section 6.
 
-## 5.1 Germany (DE)
+## Germany (DE)
 
 ```{r de-subset, echo=FALSE}
 target_country <- "DE"
@@ -351,7 +351,7 @@ sub_df <- daily_clean %>%
   na.omit()
 ```
 
-### 5.1.1 Model 1: Full General Uncentered OLS Baseline
+### Model 1: Full General Uncentered OLS Baseline
 
 ```{r de-model1-baseline, echo=FALSE}
 protected_vars <- c("temperature_c", "I(temperature_c^2)", "month", "is_weekend")
@@ -413,7 +413,7 @@ summary(model_ols_reduced3)
 
 **Final model for Germany:** `load_mw ~ temperature_c + I(temperature_c^2) + is_weekend + wind_speed_ms + tcc + month_reduced` (November merged into January baseline).
 
-### 5.1.2 OLS Diagnostic Summary Table
+### OLS Diagnostic Summary Table
 
 ```{r de-ols-summary, echo=FALSE}
 coefs_m2 <- coef(model_ols_reduced2)
@@ -431,7 +431,7 @@ summary_list_m2 <- data.frame(
 knitr::kable(summary_list_m2, caption = "Reduced OLS Framework Summary Parameters")
 ```
 
-### 5.1.3 Model 2: Centered Specific OLS Framework
+### Model 2: Centered Specific OLS Framework
 
 ```{r de-ols-centered, echo=FALSE}
 sub_df_reduced$temperature_c_centered <- scale(sub_df_reduced$temperature_c, scale = FALSE)
@@ -448,19 +448,19 @@ summary(model_ols_centered)
 Key interpretations:
 
 - The **Intercept** (57,211 MW) is the expected baseline load on a weekday in January at average temperature, with zero for other weather variables.
-- **Weekend drop** (`is_weekend1`): load drops by ~9,776 MW on weekends — the classic signature of commercial/industrial shutdown.
+- **Weekend drop** (`is_weekend1`): load drops by ~9,776 MW on weekends - the classic signature of commercial/industrial shutdown.
 - **Seasonality** (`month`): base load is generally lower in spring/summer. December is also lower (-2,908 MW) due to holiday-period demand reduction.
 - **Cloud Cover** (`tcc`): each unit increase raises load by ~1,415 MW (increased lighting demand, reduced rooftop solar output).
-- **Wind Speed** (`wind_speed_ms`): each m/s raises load by ~412 MW — likely the wind chill effect increasing heating demand.
+- **Wind Speed** (`wind_speed_ms`): each m/s raises load by ~412 MW - likely the wind chill effect increasing heating demand.
 
-### 5.1.4 AIC Model Comparison
+### AIC Model Comparison
 
 ```{r de-AIC, echo=FALSE}
 aic_output <- AIC(model_ols_centered, model_ols_reduced3)
 knitr::kable(aic_output, caption = "Model Fitness Selection Matrix (Lower AIC wins)")
 ```
 
-### 5.1.5 GAM nonlinearity check (GTS-final controls)
+### GAM nonlinearity check (GTS-final controls)
 
 ```{r de-gam-gts, echo=FALSE}
 model_gam_de <- gam(
@@ -494,7 +494,7 @@ write_csv(gts_ols_reduction_de, file.path(DATA_DIR, "gts_ols_reduction_de.csv"))
 
 ---
 
-## 5.2 Spain (ES)
+## Spain (ES)
 
 ```{r es-subset, echo=FALSE}
 target_country <- "ES"
@@ -508,7 +508,7 @@ sub_df <- daily_clean %>%
   na.omit()
 ```
 
-### 5.2.1 Model 1: Full General Uncentered OLS Baseline
+### Model 1: Full General Uncentered OLS Baseline
 
 ```{r es-model1-baseline, echo=FALSE}
 protected_vars <- c("temperature_c", "I(temperature_c^2)", "month", "is_weekend")
@@ -556,7 +556,7 @@ summary(model_ols_reduced2)
 
 **Final model for Spain:** `load_mw ~ temperature_c + I(temperature_c^2) + is_weekend + wind_speed_ms + tcc + month_reduced + precipitation_mm` (February and July merged into January baseline).
 
-### 5.2.2 OLS Diagnostic Summary Table
+### OLS Diagnostic Summary Table
 
 ```{r es-ols-summary, echo=FALSE}
 coefs_m2 <- coef(model_ols_reduced2)
@@ -574,7 +574,7 @@ summary_list_m2 <- data.frame(
 knitr::kable(summary_list_m2, caption = "Reduced OLS Framework Summary Parameters")
 ```
 
-### 5.2.3 Model 2: Centered Specific OLS Framework
+### Model 2: Centered Specific OLS Framework
 
 ```{r es-ols-centered, echo=FALSE}
 sub_df_reduced$temperature_c_centered <- scale(sub_df_reduced$temperature_c, scale = FALSE)
@@ -588,7 +588,7 @@ vif(model_ols_centered)
 summary(model_ols_centered)
 ```
 
-### 5.2.4 AIC Model Comparison
+### AIC Model Comparison
 
 ```{r es-AIC, echo=FALSE}
 aic_output <- AIC(model_ols_centered, model_ols_reduced2)
@@ -597,7 +597,7 @@ knitr::kable(aic_output, caption = "Model Fitness Selection Matrix (Lower AIC wi
 
 ---
 
-## 5.3 Finland (FI)
+## Finland (FI)
 
 ```{r fi-subset, echo=FALSE}
 target_country <- "FI"
@@ -611,7 +611,7 @@ sub_df <- daily_clean %>%
   na.omit()
 ```
 
-### 5.3.1 Model 1: Full General Uncentered OLS Baseline
+### Model 1: Full General Uncentered OLS Baseline
 
 ```{r fi-model1-baseline, echo=FALSE}
 protected_vars <- c("temperature_c", "I(temperature_c^2)", "month", "is_weekend")
@@ -657,7 +657,7 @@ summary(model_ols_reduced2)
 
 **Final model for Finland:** `load_mw ~ temperature_c + I(temperature_c^2) + is_weekend + wind_speed_ms + month_reduced` (December merged into January baseline).
 
-### 5.3.2 OLS Diagnostic Summary Table
+### OLS Diagnostic Summary Table
 
 ```{r fi-ols-summary, echo=FALSE}
 coefs_m2 <- coef(model_ols_reduced2)
@@ -675,7 +675,7 @@ summary_list_m2 <- data.frame(
 knitr::kable(summary_list_m2, caption = "Reduced OLS Framework Summary Parameters")
 ```
 
-### 5.3.3 Model 2: Centered Specific OLS Framework
+### Model 2: Centered Specific OLS Framework
 
 ```{r fi-ols-centered, echo=FALSE}
 sub_df_reduced$temperature_c_centered <- scale(sub_df_reduced$temperature_c, scale = FALSE)
@@ -689,7 +689,7 @@ vif(model_ols_centered)
 summary(model_ols_centered)
 ```
 
-### 5.3.4 AIC Model Comparison
+### AIC Model Comparison
 
 ```{r fi-AIC, echo=FALSE}
 aic_output <- AIC(model_ols_centered, model_ols_reduced2)
@@ -698,7 +698,7 @@ knitr::kable(aic_output, caption = "Model Fitness Selection Matrix (Lower AIC wi
 
 ---
 
-## 5.4 France (FR)
+## France (FR)
 
 ```{r fr-subset, echo=FALSE}
 target_country <- "FR"
@@ -712,7 +712,7 @@ sub_df <- daily_clean %>%
   na.omit()
 ```
 
-### 5.4.1 Model 1: Full General Uncentered OLS Baseline
+### Model 1: Full General Uncentered OLS Baseline
 
 ```{r fr-model1-baseline}
 protected_vars <- c("temperature_c", "I(temperature_c^2)", "month", "is_weekend")
@@ -738,7 +738,7 @@ summary(model_ols_reduced1)
 
 **Final model for France:** `load_mw ~ temperature_c + I(temperature_c^2) + is_weekend + dewpoint_c + solar_radiation_wm2 + month`
 
-### 5.4.2 OLS Diagnostic Summary Table
+### OLS Diagnostic Summary Table
 
 ```{r fr-ols-summary, echo=FALSE}
 coefs_m2 <- coef(model_ols_reduced1)
@@ -756,7 +756,7 @@ summary_list_m2 <- data.frame(
 knitr::kable(summary_list_m2, caption = "Reduced OLS Framework Summary Parameters")
 ```
 
-### 5.4.3 Model 2: Centered Specific OLS Framework
+### Model 2: Centered Specific OLS Framework
 
 ```{r fr-ols-centered, echo=FALSE}
 sub_df$temperature_c_centered <- scale(sub_df$temperature_c, scale = FALSE)
@@ -770,7 +770,7 @@ vif(model_ols_centered)
 summary(model_ols_centered)
 ```
 
-### 5.4.4 AIC Model Comparison
+### AIC Model Comparison
 
 ```{r fr-AIC, echo=FALSE}
 aic_output <- AIC(model_ols_centered, model_ols_reduced2)
@@ -780,7 +780,7 @@ knitr::kable(aic_output, caption = "Model Fitness Selection Matrix (Lower AIC wi
 
 ---
 
-## 5.5 Poland (PL)
+## Poland (PL)
 
 ```{r pl-subset, echo=FALSE}
 target_country <- "PL"
@@ -794,7 +794,7 @@ sub_df <- daily_clean %>%
   na.omit()
 ```
 
-### 5.5.1 Model 1: Full General Uncentered OLS Baseline
+### Model 1: Full General Uncentered OLS Baseline
 
 ```{r pl-model1-baseline, echo=FALSE}
 protected_vars <- c("temperature_c", "I(temperature_c^2)", "month", "is_weekend")
@@ -829,7 +829,7 @@ summary(model_ols_reduced1)
 
 **Final model for Poland:** `load_mw ~ temperature_c + I(temperature_c^2) + is_weekend + dewpoint_c + month_reduced` (March, October, November merged into January baseline).
 
-### 5.5.2 OLS Diagnostic Summary Table
+### OLS Diagnostic Summary Table
 
 ```{r pl-ols-summary, echo=FALSE}
 coefs_m2 <- coef(model_ols_reduced1)
@@ -847,7 +847,7 @@ summary_list_m2 <- data.frame(
 knitr::kable(summary_list_m2, caption = "Reduced OLS Framework Summary Parameters")
 ```
 
-### 5.5.3 Model 2: Centered Specific OLS Framework
+### Model 2: Centered Specific OLS Framework
 
 ```{r pl-ols-centered, echo=FALSE}
 sub_df_reduced$temperature_c_centered <- scale(sub_df_reduced$temperature_c, scale = FALSE)
@@ -861,7 +861,7 @@ vif(model_ols_centered)
 summary(model_ols_centered)
 ```
 
-### 5.5.4 AIC Model Comparison
+### AIC Model Comparison
 
 ```{r pl-AIC, echo=FALSE}
 aic_output <- AIC(model_ols_centered, model_ols_reduced1)
@@ -870,7 +870,7 @@ knitr::kable(aic_output, caption = "Model Fitness Selection Matrix (Lower AIC wi
 
 ---
 
-## 5.6 Variable Selection Summary
+## Variable Selection Summary
 
 | Country | Retained Weather Regressors | Dropped (collinear / insignificant) | Month Merges |
 |---------|----------------------------|--------------------------------------|--------------|
@@ -885,7 +885,7 @@ write_csv(GTS_OLS_SURVIVING, file.path(DATA_DIR, "gts_ols_surviving.csv"))
 write_csv(GTS_MONTH_MERGES, file.path(DATA_DIR, "gts_month_merges.csv"))
 ```
 
-# 6. Main Model: ARDL
+# Main Model: ARDL
 
 > **Purpose.** Fix the autocorrelation found in section 4 by stepping through three nested specifications: a Distributed-Lag (DL) of weather only, then an ARDL adding lags of the dependent variable, then a **seasonal ARDL** that adds the lag-7 terms motivated by the weekly spike in the OLS residual ACF.
 >
@@ -899,20 +899,20 @@ Following standard ARDL practice, we work on **daily** data in **differences** o
 ardl_focus_results <- list()
 
 for (cc in FOCUS_COUNTRIES) {
-  cat("\n\n## ARDL —", cc, "\n\n")
+  cat("\n\n## ARDL -", cc, "\n\n")
   sub <- daily_clean %>% filter(country_code == cc)
   z <- to_daily_zoo(sub)
   mods <- fit_ardl_models(z, country_code = cc)
 
-  cat("### Step 1 — Distributed Lag (weather only)\n")
+  cat("### Step 1 - Distributed Lag (weather only)\n")
   cat("BG check on DL parsimonious: ")
   print(bgtest(residuals(mods$dl_pars) ~ 1, order = 7))
 
-  cat("\n### Step 2 — ARDL (add lags of dependent)\n")
+  cat("\n### Step 2 - ARDL (add lags of dependent)\n")
   cat("ANOVA full vs parsimonious ARDL (H0: dropped lags are jointly zero):\n")
   print(anova(mods$ardl_full, mods$ardl_pars))
 
-  cat("\n### Step 3 — Seasonal ARDL (lag 7 on dep and temperature)\n")
+  cat("\n### Step 3 - Seasonal ARDL (lag 7 on dep and temperature)\n")
   cat("ANOVA cannot be used between ardl_pars and ardl_seasonal because the lag-7 terms drop 5 extra initial observations; compare via AIC + BG at order 7 instead.\n")
   bg7_pars <- bgtest(residuals(mods$ardl_pars) ~ 1, order = 7)$p.value
   bg7_seas <- bgtest(residuals(mods$ardl_seasonal) ~ 1, order = 7)$p.value
@@ -942,7 +942,7 @@ for (cc in FOCUS_COUNTRIES) {
     cat(sprintf("BG order %2d: p = %.4f\n", k, p))
   }
 
-  acf(residuals(model), main = paste("Seasonal ARDL residuals ACF —", cc))
+  acf(residuals(model), main = paste("Seasonal ARDL residuals ACF -", cc))
 
   diag <- ardl_diagnostics(model)
   ardl_focus_results[[cc]] <- tibble(
@@ -957,12 +957,12 @@ for (cc in FOCUS_COUNTRIES) {
 
 ardl_focus_table <- bind_rows(ardl_focus_results)
 ardl_focus_table %>%
-  knitr::kable(digits = 4, caption = "Seasonal ARDL summary — focus countries")
+  knitr::kable(digits = 4, caption = "Seasonal ARDL summary - focus countries")
 ```
 
 **Short-run temperature effect:** Sum of coefficients on `d(temperature_c)` and its lags (contemporaneous and lag 1, 3, 7). Excludes `d(temp_c2)` because that captures only the nonlinearity, not the marginal degree-Celsius response.
 
-# 7. ARDL Diagnostics, General-to-Specific Table, and ARDL vs ARIMA (DE)
+# ARDL Diagnostics, General-to-Specific Table, and ARDL vs ARIMA (DE)
 
 Course checklist (ARDL section): White test, RESET on final ARDL, general-to-specific table, and comparison of final ARDL with ARIMA on the same daily sample.
 
@@ -982,7 +982,7 @@ write_csv(ardl_diag_focus, file.path(DATA_DIR, "ardl_diagnostics_focus.csv"))
 
 ardl_diag_focus %>%
   select(country, short_run_temp, bp_p, white_p, reset_p, bg_p_order1, bg_p_order7, aic, bic) %>%
-  knitr::kable(digits = 4, caption = "Final seasonal ARDL diagnostics — focus countries (BP, White, RESET, BG)")
+  knitr::kable(digits = 4, caption = "Final seasonal ARDL diagnostics - focus countries (BP, White, RESET, BG)")
 ```
 
 ```{r ardl-gts-de, echo=FALSE}
@@ -1002,7 +1002,7 @@ gts_de <- bind_rows(
 write_csv(gts_de, file.path(DATA_DIR, "ardl_model_comparison_de.csv"))
 
 gts_de %>%
-  knitr::kable(digits = 4, caption = "General-to-specific ARDL selection — Germany")
+  knitr::kable(digits = 4, caption = "General-to-specific ARDL selection - Germany")
 ```
 
 ```{r ardl-vs-arima-daily-de, echo=FALSE}
@@ -1050,12 +1050,12 @@ write_csv(ardl_vs_arima, file.path(DATA_DIR, "ardl_vs_arima_de.csv"))
 cat("Selected daily ARIMA for DE:\n")
 print(fit_arima_daily)
 ardl_vs_arima %>%
-  knitr::kable(digits = 2, caption = "Final ARDL vs ARIMA — daily Germany (same Δlog load sample)")
+  knitr::kable(digits = 2, caption = "Final ARDL vs ARIMA - daily Germany (same Δlog load sample)")
 ```
 
 **Long-run interpretation:** Because daily log load is I(1), the levels relationship between load and temperature is captured primarily through the static OLS U-curve (Section 4). The ARDL in differences identifies short-run responses to weather shocks; a full long-run multiplier would require a levels ARDL or an error-correction specification when variables co-integrate. Given mixed integration properties of temperature across countries, we report short-run sums in the table above and discuss long-run nonlinearity via OLS turning points.
 
-# 8. Robustness: SARIMAX / ARIMA with Weather (Germany, Hourly)
+# Robustness: SARIMAX / ARIMA with Weather (Germany, Hourly)
 
 > **Purpose.** Out-of-sample forecast test using ARIMA on **hourly** DE log load with temperature and hour-of-day dummies as exogenous regressors.
 >
@@ -1138,7 +1138,7 @@ fc_eval <- bind_rows(
 fc_eval %>%
   knitr::kable(
     digits = 4,
-    caption = "Out-of-sample forecast accuracy — DE hourly load (metrics on MW levels)"
+    caption = "Out-of-sample forecast accuracy - DE hourly load (metrics on MW levels)"
   )
 
 write_csv(fc_eval, file.path(DATA_DIR, "forecast_metrics_de.csv"))
@@ -1182,13 +1182,13 @@ export_report_figures(
 )
 ```
 
-# 9. Appendix: Cross-Country Summary Table
+# Appendix: Cross-Country Summary Table
 
-> **Purpose.** Confirm that the focus-country findings generalise across the 21-country panel — one row per country with the U-curve turning point, short-run temperature effect from the seasonal ARDL, and BG residual diagnostic.
+> **Purpose.** Confirm that the focus-country findings generalise across the 21-country panel - one row per country with the U-curve turning point, short-run temperature effect from the seasonal ARDL, and BG residual diagnostic.
 >
 > **Expected result.** Negative short-run temperature effect in cold-climate countries (`SE`, `FI`, `PL`), positive in summer-cooling countries (`ES`, `GR`, `IT`, `PT`). Most countries should show `bg_p_order1 < 0.10` even after the seasonal ARDL.
 >
-> **If not as expected.** Countries with extreme outlier coefficients usually have data quality issues — partial ENTSO-E coverage, weather centroid placed offshore, or load gaps. Note these in the report rather than re-running the pipeline.
+> **If not as expected.** Countries with extreme outlier coefficients usually have data quality issues - partial ENTSO-E coverage, weather centroid placed offshore, or load gaps. Note these in the report rather than re-running the pipeline.
 
 ```{r appendix-all-countries, echo=FALSE}
 appendix_metrics <- map_dfr(AVAILABLE_COUNTRIES, function(cc) {
@@ -1231,7 +1231,7 @@ appendix_metrics %>%
   knitr::kable(digits = 4, caption = "All-country summary (appendix)")
 ```
 
-# 10. Session Information
+# Session Information
 
 > **Purpose.** Capture R version and package versions so the analysis is reproducible.
 >
