@@ -62,7 +62,7 @@ Place `data/gpw_v4_population_2020.tif` (NASA SEDAC GPW v4) for full population-
 | `make tables` | Regenerate CSV exports |
 | `make figures` | Regenerate `report/figures/*.pdf` |
 | `make report` | Compile LaTeX PDF |
-| `make analysis` | Knit `final-project-analysis.Rmd` |
+| `make analysis` | Knit `combined-analysis.Rmd` |
 | `make raw-data` | Run Python pipeline 01--05 |
 | `make clean` | Remove derived artefacts |
 
@@ -70,6 +70,5 @@ Place `data/gpw_v4_population_2020.tif` (NASA SEDAC GPW v4) for full population-
 
 - `final-project-analysis.Rmd` — full econometric notebook
 - `report/report.tex` — LaTeX manuscript
-- `export-publication-tables.R`, `export-checklist-tables.R` — table exports
 
 Helper functions at repo root: `function_testdf2.R` (ADF selection).
